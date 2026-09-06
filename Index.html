@@ -1,0 +1,296 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Sony Cyber-shot Interactive UI</title>
+
+<!-- Подключаем оригинальный пиксельный шрифт VT323 от Google Fonts -->
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=VT323&display=swap" rel="stylesheet">
+
+<style>
+* {
+box-sizing: border-box;
+margin: 0;
+padding: 0;
+/* Используем подключенный пиксельный шрифт VT323 */
+font-family: 'VT323', monospace;
+}
+
+body {
+width: 100vw;
+height: 100vh;
+display: flex;
+justify-content: center;
+align-items: center;
+/* Фоновая фотография с паттерном */
+background: url('1000044419.jpg') center/cover no-repeat;
+overflow: hidden;
+}
+
+.camera-wrapper {
+position: relative;
+width: 90vw;
+max-width: 480px;
+aspect-ratio: 480 / 720;
+display: flex;
+justify-content: center;
+align-items: center;
+filter: drop-shadow(0 20px 30px rgba(0,0,0,0.4));
+}
+
+/* Фотография фотоаппарата Sony Cyber-shot */
+.camera-body {
+position: absolute;
+top: 0;
+left: 0;
+width: 100%;
+height: 100%;
+object-fit: contain;
+pointer-events: none;
+z-index: 2;
+}
+
+/* Экран внутри камеры */
+.camera-screen {
+position: absolute;
+top: 8.8%;
+left: 13.5%;
+width: 69.8%;
+height: 59.8%;
+background-color: #ffffff;
+z-index: 1;
+display: flex;
+flex-direction: column;
+justify-content: center;
+align-items: center;
+padding: 12px;
+gap: 12px;
+border-radius: 4px;
+overflow: hidden;
+}
+
+/* Пункты меню на экране /
+.menu-item {
+width: 100%;
+background: #ffffff;
+border: 2px solid #000000;
+border-radius: 20px;
+padding: 6px 14px;
+display: flex;
+justify-content: space-between;
+align-items: center;
+cursor: pointer;
+color: #000000;
+font-size: 22px; / Увеличен размер для ретро-шрифта VT323 */
+line-height: 1;
+text-transform: capitalize;
+transition: all 0.3s ease;
+user-select: none;
+}
+
+.menu-item .arrow {
+opacity: 0;
+transform: translateX(-10px);
+transition: all 0.3s ease;
+font-size: 24px;
+}
+
+/* Активный выбранный пункт меню */
+.menu-item.active {
+padding: 10px 16px;
+font-size: 28px;
+font-weight: bold;
+text-transform: uppercase;
+box-shadow: 0 4px 8px rgba(0,0,0,0.15);
+}
+
+.menu-item.active .arrow {
+opacity: 1;
+transform: translateX(0);
+}
+
+/* Прозрачные кликабельные области поверх физических кнопок камеры /
+.camera-controls {
+position: absolute;
+z-index: 3; / Слой над изображением камеры */
+top: 0;
+left: 0;
+width: 100%;
+height: 100%;
+pointer-events: none;
+}
+
+.btn-clickable {
+position: absolute;
+pointer-events: auto;
+cursor: pointer;
+border-radius: 50%;
+/* Раскомментируйте ниже background для точной отладки зон кнопок /
+/ background: rgba(255, 0, 0, 0.4); */
+}
+
+/* Кнопка "Вверх" на джойстике */
+.btn-up {
+top: 75.8%;
+left: 27.5%;
+width: 12%;
+height: 8%;
+}
+
+/* Кнопка "Вниз" на джойстике */
+.btn-down {
+top: 90.5%;
+left: 27.5%;
+width: 12%;
+height: 8%;
+}
+
+/* Центральная кнопка OK / Ввод */
+.btn-ok {
+top: 83.2%;
+left: 26.5%;
+width: 14%;
+height: 9%;
+}
+
+.footer-text {
+position: absolute;
+bottom: 20px;
+left: 0;
+width: 100%;
+display: flex;
+justify-content: space-between;
+padding: 0 40px;
+font-size: 32px;
+color: #1a2a56;
+pointer-events: none;
+}
+</style>
+</head>
+<body>
+
+<div class="camera-wrapper">
+<!-- Фотография корпуса камеры -->
+<img src="1000044424.png" alt="Sony Cyber-shot DSC-W50" class="camera-body">
+
+<!-- Экран с пунктами меню -->
+<div class="camera-screen" id="cameraScreen">
+<div class="menu-item" data-index="0">
+<span class="label">About me</span>
+<span class="arrow">→</span>
+</div>
+<div class="menu-item active" data-index="1">
+<span class="label">PORTFOLIO</span>
+<span class="arrow">→</span>
+</div>
+<div class="menu-item" data-index="2">
+<span class="label">Achievements</span>
+<span class="arrow">→</span>
+</div>
+</div>
+
+<!-- Интерактивные кнопки управления на самом корпусе камеры -->
+<div class="camera-controls">
+<div class="btn-clickable btn-up" id="btnUp" title="Вверх"></div>
+<div class="btn-clickable btn-down" id="btnDown" title="Вниз"></div>
+<div class="btn-clickable btn-ok" id="btnOk" title="OK / Выбрать"></div>
+</div>
+</div>
+
+<div class="footer-text">
+<span>Study portfolio</span>
+<span>2026</span>
+</div>
+
+<script>
+const menuItems = document.querySelectorAll('.menu-item');
+const cameraScreen = document.getElementById('cameraScreen');
+
+// Интерактивные физические кнопки корпуса
+const btnUp = document.getElementById('btnUp');
+const btnDown = document.getElementById('btnDown');
+const btnOk = document.getElementById('btnOk');
+
+const sequence = [1, 2, 0, 2];
+let seqIndex = 0;
+let currentIndex = 1; // Старт с PORTFOLIO
+let intervalId = null;
+
+const labels = ["About me", "Portfolio", "Achievements"];
+
+function setActiveItem(index) {
+currentIndex = index;
+menuItems.forEach((item, idx) => {
+const labelSpan = item.querySelector('.label');
+if (idx === index) {
+item.classList.add('active');
+labelSpan.textContent = labels[idx].toUpperCase();
+} else {
+item.classList.remove('active');
+labelSpan.textContent = labels[idx];
+}
+});
+}
+
+function nextStep() {
+seqIndex = (seqIndex + 1) % sequence.length;
+setActiveItem(sequence[seqIndex]);
+}
+
+function startAutoLoop() {
+if (!intervalId) {
+intervalId = setInterval(nextStep, 1300);
+}
+}
+
+function stopAutoLoop() {
+if (intervalId) {
+clearInterval(intervalId);
+intervalId = null;
+}
+}
+
+// --- Обработка физических кнопок корпуса ---
+btnUp.addEventListener('click', () => {
+stopAutoLoop();
+let newIndex = currentIndex - 1;
+if (newIndex < 0) newIndex = menuItems.length - 1;
+setActiveItem(newIndex);
+});
+
+btnDown.addEventListener('click', () => {
+stopAutoLoop();
+let newIndex = (currentIndex + 1) % menuItems.length;
+setActiveItem(newIndex);
+});
+
+btnOk.addEventListener('click', () => {
+stopAutoLoop();
+alert(Выбран пункт: ${labels[currentIndex]});
+});
+
+// --- Обработка наведения и кликов мышью на экран ---
+menuItems.forEach((item, idx) => {
+item.addEventListener('click', () => {
+stopAutoLoop();
+setActiveItem(idx);
+});
+
+item.addEventListener('mouseenter', () => {
+stopAutoLoop();
+setActiveItem(idx);
+});
+});
+
+cameraScreen.addEventListener('mouseleave', () => {
+startAutoLoop();
+});
+
+// Старт авто-анимации
+startAutoLoop();
+</script>
+</body>
+</html>
